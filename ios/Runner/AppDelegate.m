@@ -19,11 +19,10 @@
   FlutterMethodChannel* batteryChannel = [FlutterMethodChannel
       methodChannelWithName:@"samples.flutter.io/battery"
             binaryMessenger:controller];
-  __weak typeof(self) weakSelf = self;
   [batteryChannel setMethodCallHandler:^(FlutterMethodCall* call,
                                          FlutterResult result) {
     if ([@"getBatteryLevel" isEqualToString:call.method]) {
-      int batteryLevel = [weakSelf getBatteryLevel];
+      int batteryLevel = [self getBatteryLevel];
       if (batteryLevel == -1) {
         result([FlutterError errorWithCode:@"UNAVAILABLE"
                                    message:@"Battery info unavailable"
