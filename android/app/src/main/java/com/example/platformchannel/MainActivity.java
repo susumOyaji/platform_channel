@@ -10,6 +10,9 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
+import android.telecom.TelecomManager;
+import android.telecom.call;
+import android.telecom.connection; 
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -98,4 +101,22 @@ public class MainActivity extends FlutterActivity {
           intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
     }
   }
+
+
+
+  private int getTelecomManager(Context context) {
+    int highlightColor = 0;
+    if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+      TelecomManager telecomManager = (TelecomManager)this.getSystemService(Context.TELECOM_SERVICE);
+        PhoneAccountHandle accountHandle=telecomManager.getSimCallManager();
+        PhoneAccount account=telecomManager.getPhoneAccount(accountHandle);
+        telecomManager.registerPhoneAccount(account);
+
+        CharSequence label=account.getLabel();
+        ConnectionRequest request = null;
+
+        Connection connection= service.onCreateOutgoingConnection(accountHandle,request);
+    }
+  }
 }
+
