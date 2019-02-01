@@ -11,8 +11,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.telecom.TelecomManager;
-import android.telephony.TelephonyManager;
-import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -31,7 +29,6 @@ public class MainActivity extends FlutterActivity {
   private static final String BATTERY_CHANNEL = "samples.flutter.io/battery";
   private static final String CHARGING_CHANNEL = "samples.flutter.io/charging";
   private static final String CALL_CHANNEL = "samples.flutter.io/call";
-
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -61,7 +58,7 @@ public class MainActivity extends FlutterActivity {
           public void onMethodCall(MethodCall call, Result result) {
             if (call.method.equals("getBatteryLevel9")) {
               int batteryLevel = getBatteryLevel9();
-
+              //int batteryLevel9 = getBatteryLevel9();
               if (batteryLevel != -1) {
                 result.success(batteryLevel);
               } else {
@@ -92,9 +89,33 @@ public class MainActivity extends FlutterActivity {
     };
   }
 
+  
+  private int getBatteryLevel() {
+    if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+      BatteryManager batteryManager = (BatteryManager).getSystemService(BATTERY_SERVICE);
+      return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+    } else {
+      Intent intent = new ContextWrapper(getApplicationContext()).
+          registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+      return (intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100) /
+          intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+    }
+  }
 
-  //APIレベル21（Android 5.0、Lollipop）
   private int getBatteryLevel9() {
+    if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+      BatteryManager batteryManager = (BatteryManager).getSystemService(BATTERY_SERVICE);
+      return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+    } else {
+      Intent intent = new ContextWrapper(getApplicationContext()).
+          registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+      return (intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100) /
+          intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+    }
+  }
+}
+
+private int getBatteryLevel9() {
     String phone = "7769942159";
     if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
       TelecomManager telecomManager = (TelecomManager) this.getSystemService(Context.TELECOM_SERVICE);
@@ -115,33 +136,3 @@ public class MainActivity extends FlutterActivity {
       return 10;//(intent.getIntExtra(TelecomManager.EXTRA_STATE_IDLE));// / intent.getIntExtra(TelecomManager.EXTRA_SCALE, -1);
     }
   }
-
-
-  //呼び出しを開始するcall（）メソッド
-  /*
-  public void call() {
-    TelecomManager manager = (TelecomManager) getSystemService(TELECOM_SERVICE);
-    PhoneAccountHandle phoneAccountHandle = new PhoneAccountHandle(
-            new ComponentName(getPackageName(),
-                    MyConnectionService.class.getName()), "myConnectionServiceId");
-    Bundle test = new Bundle();
-    test.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccountHandle);
-    manager.placeCall(Uri.parse("tel:" + "1212312312"), test);
-  }
-*/
-
-
-
-  
-  private int getBatteryLevel() {
-    if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-      BatteryManager batteryManager = (BatteryManager) getSystemService(BATTERY_SERVICE);
-      return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-    } else {
-      Intent intent = new ContextWrapper(getApplicationContext()).
-          registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-      return (intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) * 100) /
-          intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-    }
-  }
-}

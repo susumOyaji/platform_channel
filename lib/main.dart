@@ -13,11 +13,13 @@ class PlatformChannel extends StatefulWidget {
 }
 
 class _PlatformChannelState extends State<PlatformChannel> {
-  static const MethodChannel methodChannel = const MethodChannel('battery_channel');
-  static const EventChannel eventChannel = const EventChannel('charging_channel');
+  static const MethodChannel methodChannel = const MethodChannel('samples.flutter.io/battery');
+  static const EventChannel eventChannel = const EventChannel('samples.flutter.io/charging');
+  static const MethodChannel callChannel = const MethodChannel('samples.flutter.io/call');
 
   String _batteryLevel = 'Battery level: unknown.';
   String _chargingStatus = 'Battery status: unknown.';
+  String _callst = 'callste: unknown.';
 
   Future<Null> _getBatteryLevel() async {
     String batteryLevel;
@@ -31,6 +33,21 @@ class _PlatformChannelState extends State<PlatformChannel> {
       _batteryLevel = batteryLevel;
     });
   }
+
+
+   Future<Null> _getBatteryLevel9() async {
+    String call;
+    try {
+      final int result = await callChannel.invokeMethod('getBatteryLevel9');
+      call = 'Conection: $result%.';
+    } on PlatformException {
+      call = 'Failed to get battery level9.';
+    }
+    setState(() {
+      _callst = call;
+    });
+  }
+
 
   @override
   void initState() {
@@ -68,6 +85,15 @@ class _PlatformChannelState extends State<PlatformChannel> {
                   onPressed: _getBatteryLevel,
                 ),
               ),
+              new Text(_callst, key: const Key('Battery level9 label')),
+              new Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: new RaisedButton(
+                  child: const Text('Call'),
+                  onPressed: _getBatteryLevel9,
+                ),
+              ),
+
             ],
           ),
           new Text(_chargingStatus),

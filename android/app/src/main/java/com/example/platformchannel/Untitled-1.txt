@@ -1,0 +1,128 @@
+
+  /*
+  private int getTelecomManager(Context context) {
+    int highlightColor = 0;
+    if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+      TelecomManager telecomManager = (TelecomManager)this.getSystemService(Context.TELECOM_SERVICE);
+        PhoneAccountHandle accountHandle=telecomManager.getSimCallManager();
+        PhoneAccount account=telecomManager.getPhoneAccount(accountHandle);
+        telecomManager.registerPhoneAccount(account);
+
+        CharSequence label=account.getLabel();
+        ConnectionRequest request = null;
+
+        Connection connection= service.onCreateOutgoingConnection(accountHandle,request);
+    }
+  }
+  */
+
+
+
+
+
+//接続は次のように作成されました。
+/*
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        connection?.connectionProperties = Connection.PROPERTY_SELF_MANAGED
+    }
+    connection?.connectionCapabilities = Connection.CAPABILITY_HOLD and Connection.CAPABILITY_SUPPORT_HOLD
+    connection?.setVideoState(VideoProfile.STATE_BIDIRECTIONAL)
+*/
+
+//電話をかける：
+/*
+val telecomService = context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+                    try {
+                        val uri = Uri.fromParts(PhoneAccount.SCHEME_SIP, teacherInfo.name, null)
+                        telecomService.placeCall(uri, Bundle.EMPTY)
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+
+
+//電話を受ける
+
+ val telecomService = applicationContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+                      try {
+                          Log.d("VideoCOnnection", "addNewIncomingCall")
+                          telecomService.addNewIncomingCall(CallUtils.getAccountConnection(telecomService), Bundle.EMPTY)
+                      } catch (e: Throwable) {
+                          Log.d("VideoCOnnection", "crash")
+                          e.printStackTrace()
+                      }
+
+
+@SuppressLint("MissingPermission")
+fun getAccountConnection(teleconManager: TelecomManager) : PhoneAccountHandle? {
+    return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val enabledAccounts = teleconManager.callCapablePhoneAccounts
+        for(account in enabledAccounts) {
+            if(account.componentName.className.equals(BindTelecomService::class.java.canonicalName)) {
+                return account
+            }
+        }
+        return null
+    } else
+        null
+}  
+
+
+
+//私はVoIPコールのためにアンドロイドクラスConnectionServiceを実装しようとしています。
+//電話アカウントを登録する：
+TelecomManager tm = (TelecomManager) getSystemService(Context.TELECOM_SERVICE);
+PhoneAccountHandle phoneAccountHandle = new PhoneAccountHandle(new ComponentName(getApplicationContext(),ConnectionService33.class), "sample");
+PhoneAccount phoneAccount = PhoneAccount.builder(phoneAccountHandle, "sample")
+.setShortDescription("sample")
+.addSupportedUriScheme(PhoneAccount.SCHEME_TEL)
+.setSupportedUriSchemes(Arrays.asList("tel"))
+.setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER)
+.setIcon(Icon.createWithResource(MainActivity.this,R.drawable.ic_action_name))
+.build();
+tm.registerPhoneAccount(phoneAccount);
+if (Build.MANUFACTURER.equalsIgnoreCase("Samsung")) {
+  Intent intent = new Intent();
+  intent.setComponent(new ComponentName("com.android.server.telecom","com.android.server.telecom.settings.EnableAccountPreferenceActivity"));
+  startActivity(intent);
+} else {
+  startActivity(new Intent(TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS));
+}
+
+
+//電話をかける：コード
+TelecomManager tm = (TelecomManager)getSystemService(Context.TELECOM_SERVICE);
+PhoneAccountHandle phoneAccountHandle = new PhoneAccountHandle(new ComponentName(getApplicationContext(),ConnectionService33.class), "sample");
+Bundle extras = new Bundle();
+Uri uri = Uri.fromParts(PhoneAccount.SCHEME_TEL,"999999999", null);
+extras.putParcelable(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, uri);
+extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri);
+extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE,phoneAccountHandle);
+//tm.addNewIncomingCall(phoneAccountHandle, extras);
+tm.placeCall(uri, extras);
+
+
+
+私のConnectionServiceコード
+@Override
+public Connection onCreateIncomingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+  Log.d(TAG,"onCreateIncomingConnection");
+  Log.d(TAG,"incomong call = " + request.getAddress().toString());
+  TConnection tConnection = new TConnection(this);
+  tConnection.setAddress(request. getAddress(),TelecomManager.PRESENTATION_ALLOWED);
+  tConnection.setAudioModeIsVoip(true);
+  tConnection.setConnectionCapabilities(Connection.CAPABILITY_MUTE);
+  tConnection.setInitializing();
+  return tConnection;
+}
+
+@Override
+public Connection onCreateOutgoingConnection(PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
+  Log.d(TAG,"onCreateOutgoingConnection");
+  Log.d(TAG,"outgoing call = " + request.getAddress().toString());
+  TConnection tConnection = new TConnection(this);
+  tConnection.setAddress(request.getAddress(),TelecomManager.PRESENTATION_ALLOWED);
+  tConnection.setAudioModeIsVoip(true);
+  tConnection.setConnectionCapabilities(Connection.CAPABILITY_MUTE);
+  tConnection.setInitializing();
+  return tConnection;
+}
